@@ -3,7 +3,8 @@
   (:require [quil.core :as q :refer :all]
             [quil.middleware :as m]
             [lcars.colors :as colors]
-            [lcars.ui :as ui]))
+            [lcars.ui :as ui]
+            [clojure.tools.logging :as log]))
 
 (defn rectangular-button
   [button-text]
@@ -72,7 +73,7 @@
 
 (defn start-up-sequence
   [{:keys [emblem] :as state}]
-  (with-frame "LCARS CONSOLE" "LCARS CONSOLE" :ancillary
+  (with-frame "LCARS CONSOLE" "LCARS CONSOLE" :primary
     (text-align :center)
     (colors/fill :primary)
     (shape emblem
@@ -89,9 +90,12 @@
 
 (defn setup
   []
-  (smooth)
-  {:font (create-font "Helvetica LT UltraCompressed" 60 true)
-   :emblem (load-shape "img/UFP_Emblem.svg")})
+  (background 0)
+  (ellipse-mode :corner)
+  (no-stroke)
+  (text-font (create-font "Helvetica LT UltraCompressed" 80 true))
+  (colors/fill :primary)
+  {:emblem (load-shape "img/UFP_Emblem.svg")})
 
 (defn update
   [state]
@@ -99,12 +103,76 @@
 
 (defn draw
   [state]
-  (background 0)
-  (text-font (:font state))
-  (colors/fill :primary)
-  (no-stroke)
-  (ellipse-mode :corner)
   (start-up-sequence state))
+
+(defn focus-gained
+  [state]
+  (log/debug "FOCUS GAINED")
+  state)
+
+(defn focus-lost
+  [state]
+  (log/debug "FOCUS LOST")
+  state)
+
+(defn mouse-entered
+  [state {:keys [x y]}]
+  (log/debug "MOUSE ENTERED")
+  state)
+
+(defn mouse-exited
+  [state {:keys [x y]}]
+  (log/debug "MOUSE EXITED")
+  state)
+
+(defn mouse-pressed
+  [state {:keys [x y button]}]
+  (log/debug "MOUSE PRESSED")
+  state)
+
+(defn mouse-released
+  [state {:keys [x y]}]
+  (log/debug "MOUSE RELEASED")
+  state)
+
+(defn mouse-clicked
+  [state {:keys [x y button]}]
+  (log/debug "MOUSE CLICKED")
+  state)
+
+(defn mouse-moved
+  [state {:keys [x y p-x p-y]}]
+  (log/debug "MOUSE MOVED")
+  state)
+
+(defn mouse-dragged
+  [state {:keys [x y p-x p-y button]}]
+  (log/debug "MOUSE DRAGGED")
+  state)
+
+(defn mouse-wheel
+  [state event]
+  (log/debug "MOUSE WHEEL")
+  state)
+
+(defn key-pressed
+  [state {:keys [key key-code raw-key]}]
+  (log/debug "KEY PRESSED")
+  state)
+
+(defn key-released
+  [state]
+  (log/debug "KEY RELEASED")
+  state)
+
+(defn key-typed
+  [state {:keys [key key-code raw-key]}]
+  (log/debug "KEY TYPED")
+  state)
+
+(defn on-close
+  [state]
+  (log/debug "ON CLOSE"))
 
 (defsketch LCARS
   :title "Library Computer Access/Retrieval System"
@@ -112,6 +180,20 @@
   :setup setup
   :update update
   :draw draw
+  :focus-gained focus-gained
+  :focus-lost focus-lost
+  :mouse-entered mouse-entered
+  :mouse-exited mouse-exited
+  :mouse-pressed mouse-pressed
+  :mouse-released mouse-released
+  :mouse-clicked mouse-clicked
+  :mouse-moved mouse-moved
+  :mouse-dragged mouse-dragged
+  :mouse-wheel mouse-wheel
+  :key-pressed key-pressed
+  :key-released key-released
+  :key-typed key-typed
+  :on-close on-close
   :renderer "processing.core.PGraphicsRetina2D"
   :middleware [m/fun-mode])
 
