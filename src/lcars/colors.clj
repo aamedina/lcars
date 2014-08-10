@@ -1,5 +1,6 @@
 (ns lcars.colors
-  (:require [quil.core :as q]))
+  (:require [quil.core :as q]
+            [lcars.ui :as ui]))
 
 (def off-white [0xff 0xff 0xcc])
 (def light-purple [0xA5 0x8E 0xC6])
@@ -19,20 +20,20 @@
 
 (def primary-systems
   {:primary light-blue 
-   :secondary yellow
-   :tertiary off-white
+   :secondary off-white
+   :tertiary yellow
    :elbows orange-yellow})
 
 (def secondary-systems
   {:primary light-purple
-   :secondary orange-yellow
-   :tertiary yellow
+   :secondary yellow
+   :tertiary orange-yellow
    :elbows brown})
 
 (def ancillary-systems
   {:primary light-purple
-   :secondary yellow
-   :tertiary dark-purple
+   :secondary dark-purple
+   :tertiary orange
    :elbows pink})
 
 (def database-systems
@@ -42,8 +43,8 @@
    :elbows red})
 
 (defn fill
-  [system color]
-  (let [[r g b] (case system
+  [color]
+  (let [[r g b] (case ui/*system*
                   :primary (primary-systems color)
                   :secondary (secondary-systems color)
                   :ancillary (ancillary-systems color)

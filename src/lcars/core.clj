@@ -2,11 +2,12 @@
   (:gen-class)
   (:require [quil.core :as q :refer :all]
             [quil.middleware :as m]
-            [lcars.colors :as colors]))
+            [lcars.colors :as colors]
+            [lcars.ui :as ui]))
 
 (defn rectangular-button
   [button-text]
-  (colors/fill :primary :primary)
+  (colors/fill :primary)
   (rect 0 0 150 60)
   (fill 0)
   (text-size 25)
@@ -15,7 +16,7 @@
 
 (defn standard-button
   [button-text]
-  (colors/fill :primary :primary)
+  (colors/fill :primary)
   (arc 50 40 75 60 (/ PI 2) (/ (* PI 3) 2))
   (fill 0)
   (text-size 25)
@@ -24,7 +25,7 @@
 
 (defn cap
   [x y orientation]
-  (colors/fill :primary :primary)
+  (colors/fill :secondary)
   (case orientation
     :left (do (arc x y 60 60 (/ PI 2) (/ (* PI 3) 2))
               (rect (+ x 30) y 30 60))
@@ -36,8 +37,9 @@
   (case anchor-type
     :header (let []              
               (cap 10 10 :left)
+              (colors/fill :primary)
               (rect 80 10 (- (width) 170 (text-width title)) 60)
-              (colors/fill :primary :secondary)
+              (colors/fill :tertiary)
               (text-size 60)
               (text-align :right)
               (text title (- (width) 80) (+ (text-ascent) 5))
@@ -45,11 +47,12 @@
     :footer (let []
               (cap 10 (- (height) 70) :left)
               (text-size 60)
+              (colors/fill :primary)
               (rect (+ (text-width title) 90)
                     (- (height) 70)
                     (- (width) 170 (text-width title))
                     60)
-              (colors/fill :primary :secondary)
+              (colors/fill :tertiary)
               (text-align :left)
               (text title 80 (- (height) 20))
               (cap (- (width) 70) (- (height) 70) :right))))
@@ -60,22 +63,29 @@
          (/ (- (width) (.-width sh)) 2)
          (/ (- (height) (.-height sh)) 2)))
 
+(defmacro with-frame
+  [title subtitle system & body]
+  `(binding [ui/*system* ~system]
+     (anchor :header ~title)
+     ~@body
+     (anchor :footer ~subtitle)))
+
 (defn start-up-sequence
   [{:keys [emblem] :as state}]
-  (anchor :header "MAIN TITLE \u2022 ALIGNED RIGHT")
-  (text-align :center)
-  (shape emblem
-         (/ (- (width) (.-width emblem)) 2)
-         (- (/ (- (height) (.-height emblem)) 2) 80))
-  (text-size 60)
-  (text "THE LCARS COMPUTER NETWORK"
-        (/ (width) 2)
-        (- (+ (/ (+ (height) (.-height emblem)) 2) (text-ascent)) 80))
-  (text-size 25)
-  (text "AUTHORIZED ACCESS ONLY \u2022 SYSTEM AVAILABLE"
-        (/ (width) 2)
-        (- (+ (/ (+ (height) (.-height emblem)) 2) (text-ascent)) 10))
-  (anchor :footer "SUBTITLE \u2022 ALIGNED LEFT"))
+  (with-frame "LCARS CONSOLE" "LCARS CONSOLE" :ancillary
+    (text-align :center)
+    (colors/fill :primary)
+    (shape emblem
+           (/ (- (width) (.-width emblem)) 2)
+           (- (/ (- (height) (.-height emblem)) 2) 80))
+    (text-size 80)
+    (text "THE LCARS COMPUTER NETWORK"
+          (/ (width) 2)
+          (- (+ (/ (+ (height) (.-height emblem)) 2) (text-ascent)) 80))
+    (text-size 25)
+    (text "AUTHORIZED ACCESS ONLY \u2022 SYSTEM AVAILABLE"
+          (/ (width) 2)
+          (+ (/ (+ (height) (.-height emblem)) 2) 25))))
 
 (defn setup
   []
@@ -91,7 +101,7 @@
   [state]
   (background 0)
   (text-font (:font state))
-  (colors/fill :primary :primary)
+  (colors/fill :primary)
   (no-stroke)
   (ellipse-mode :corner)
   (start-up-sequence state))

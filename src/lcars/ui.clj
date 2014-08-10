@@ -1,5 +1,7 @@
 (ns lcars.ui)
 
+(def ^:dynamic *system* :primary)
+
 (defprotocol Displayable
   (display [this]))
 
