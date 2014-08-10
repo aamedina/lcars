@@ -1,21 +1,12 @@
 (ns lcars.core
   (:gen-class)
   (:require [quil.core :as q :refer :all]
-            [quil.middleware :as m]))
-
-(def color-scheme
-  {:off-white [0xcc 0xdd 0xff]
-   :light-blue [0x55 0x99 0xff]
-   :primary-blue [0x33 0x66 0xff]
-   :secondary-blue [0x00 0x11 0xee]
-   :darker-blue [0x00 0x00 0x88]
-   :yellow [0xbb 0xaa 0x55]
-   :orange [0xbb 0x44 0x11]
-   :red [0x88 0x22 0x11]})
+            [quil.middleware :as m]
+            [lcars.colors :as colors]))
 
 (defn rectangular-button
   [button-text]
-  (apply fill (:primary-blue color-scheme))
+  (colors/fill :primary :primary)
   (rect 0 0 150 60)
   (fill 0)
   (text-size 25)
@@ -24,7 +15,7 @@
 
 (defn standard-button
   [button-text]
-  (apply fill (:primary-blue color-scheme))
+  (colors/fill :primary :primary)
   (arc 50 40 75 60 (/ PI 2) (/ (* PI 3) 2))
   (fill 0)
   (text-size 25)
@@ -33,7 +24,7 @@
 
 (defn cap
   [x y orientation]
-  (apply fill (:primary-blue color-scheme))
+  (colors/fill :primary :primary)
   (case orientation
     :left (do (arc (+ x 10) (+ y 10) 60 60 (/ PI 2) (/ (* PI 3) 2))
               (rect (+ x 40) (+ y 10) 30 60))
@@ -43,18 +34,20 @@
 (defn anchor
   [anchor-type title]
   (case anchor-type
-    :header (let []
-              (cap 0 0 :left)
-              (apply fill (:light-blue color-scheme))
-              (text-size 40)
+    :header (let []              
+              (cap 0 0 :left)              
+              (colors/fill :primary :secondary)
+              (text-size 60)
               (text-align :right)
-              (text title (- (width) 10) (text-ascent)))
+              (text title (- (width) 80) (+ (text-ascent) 5))
+              (cap (- (width) 80) 0 :right))
     :footer (let []
-              (cap 120 0 :right)
-              (apply fill (:light-blue color-scheme))
-              (text-size 40)
+              (cap 0 (- (height) 80) :left)
+              (colors/fill :primary :secondary)
+              (text-size 60)
               (text-align :left)
-              (text title 10 (- (height) 10)))))
+              (text title 80 (- (height) 20))
+              (cap (- (width) 80) (- (height) 80) :right))))
 
 (defn center-shape
   [sh]
@@ -93,7 +86,7 @@
   [state]
   (background 0)
   (text-font (:font state))
-  (apply fill (:light-blue color-scheme))
+  (colors/fill :primary :primary)
   (no-stroke)
   (ellipse-mode :corner)
   (start-up-sequence state))
