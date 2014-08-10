@@ -35,10 +35,10 @@
   [x y orientation]
   (apply fill (:primary-blue color-scheme))
   (case orientation
-    :left (do (arc (+ x 10) (+ y 10) 75 60 (/ PI 2) (/ (* PI 3) 2))
-              (rect (+ x 47) (+ y 10) 15 60 1 0 0 1))
-    :right (do (arc (+ x 10) (+ y 10) 75 60 (/ (* PI 3) 2) (/ (* PI 5) 2))
-               (rect (+ x 33) (+ y 10) 15 60 0 1 1 0))))
+    :left (do (arc (+ x 10) (+ y 10) 60 60 (/ PI 2) (/ (* PI 3) 2))
+              (rect (+ x 40) (+ y 10) 30 60))
+    :right (do (arc (+ x 10) (+ y 10) 60 60 (/ (* PI 3) 2) (/ (* PI 5) 2))
+               (rect (+ x 10) (+ y 10) 30 60))))
 
 (defn anchor
   [anchor-type title]
