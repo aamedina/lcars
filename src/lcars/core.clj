@@ -72,7 +72,7 @@
      (anchor :footer ~subtitle)))
 
 (defn start-up-sequence
-  [{:keys [emblem] :as state}]
+  [{:keys [emblem x y] :as state}]
   (with-frame "LCARS CONSOLE" "LCARS CONSOLE" :primary
     (text-align :center)
     (colors/fill :primary)
@@ -86,16 +86,21 @@
     (text-size 25)
     (text "AUTHORIZED ACCESS ONLY \u2022 SYSTEM AVAILABLE"
           (/ (width) 2)
-          (+ (/ (+ (height) (.-height emblem)) 2) 25))))
+          (+ (/ (+ (height) (.-height emblem)) 2) 25))
+
+    (text (pr-str [x y])
+          (/ (width) 2)
+          (+ (/ (+ (height) (.-height emblem)) 2) 50))))
 
 (defn setup
   []
-  (background 0)
+  (log/debug "SETUP")
   (ellipse-mode :corner)
   (no-stroke)
   (text-font (create-font "Helvetica LT UltraCompressed" 80 true))
   (colors/fill :primary)
-  {:emblem (load-shape "img/UFP_Emblem.svg")})
+  {:emblem (load-shape "img/UFP_Emblem.svg")
+   :x 0 :y 0})
 
 (defn update
   [state]
@@ -103,72 +108,86 @@
 
 (defn draw
   [state]
+  (background 0)
   (start-up-sequence state))
 
 (defn focus-gained
   [state]
-  (log/debug "FOCUS GAINED")
   state)
 
 (defn focus-lost
   [state]
-  (log/debug "FOCUS LOST")
   state)
 
 (defn mouse-entered
   [state {:keys [x y]}]
-  (log/debug "MOUSE ENTERED")
-  state)
+  (assoc state
+    :x x
+    :y y))
 
 (defn mouse-exited
   [state {:keys [x y]}]
-  (log/debug "MOUSE EXITED")
-  state)
+  (assoc state
+    :x x
+    :y y))
 
 (defn mouse-pressed
   [state {:keys [x y button]}]
-  (log/debug "MOUSE PRESSED")
-  state)
+  (assoc state
+    :x x
+    :y y
+    :button button))
 
 (defn mouse-released
   [state {:keys [x y]}]
-  (log/debug "MOUSE RELEASED")
-  state)
+  (assoc state
+    :x x
+    :y y))
 
 (defn mouse-clicked
   [state {:keys [x y button]}]
-  (log/debug "MOUSE CLICKED")
-  state)
+  (assoc state
+    :x x
+    :y y))
 
 (defn mouse-moved
   [state {:keys [x y p-x p-y]}]
-  (log/debug "MOUSE MOVED")
-  state)
+  (assoc state
+    :x x
+    :y y
+    :p-x p-x
+    :p-y p-y))
 
 (defn mouse-dragged
   [state {:keys [x y p-x p-y button]}]
-  (log/debug "MOUSE DRAGGED")
-  state)
+  (assoc state
+    :x x
+    :y y
+    :p-x p-x
+    :p-y p-y))
 
 (defn mouse-wheel
   [state event]
-  (log/debug "MOUSE WHEEL")
-  state)
+  (assoc state
+    :mouse-wheel event))
 
 (defn key-pressed
   [state {:keys [key key-code raw-key]}]
-  (log/debug "KEY PRESSED")
-  state)
+  (assoc state
+    :key key
+    :key-code key-code
+    :raw-key raw-key))
 
 (defn key-released
   [state]
-  (log/debug "KEY RELEASED")
   state)
 
 (defn key-typed
   [state {:keys [key key-code raw-key]}]
-  (log/debug "KEY TYPED")
-  state)
+  (assoc state
+    :key key
+    :key-code key-code
+    :raw-key raw-key))
 
 (defn on-close
   [state]
@@ -194,7 +213,6 @@
   :key-released key-released
   :key-typed key-typed
   :on-close on-close
-  :renderer "processing.core.PGraphicsRetina2D"
   :middleware [m/fun-mode])
 
 (defn -main
