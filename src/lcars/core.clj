@@ -26,28 +26,33 @@
   [x y orientation]
   (colors/fill :primary :primary)
   (case orientation
-    :left (do (arc (+ x 10) (+ y 10) 60 60 (/ PI 2) (/ (* PI 3) 2))
-              (rect (+ x 40) (+ y 10) 30 60))
-    :right (do (arc (+ x 10) (+ y 10) 60 60 (/ (* PI 3) 2) (/ (* PI 5) 2))
-               (rect (+ x 10) (+ y 10) 30 60))))
+    :left (do (arc x y 60 60 (/ PI 2) (/ (* PI 3) 2))
+              (rect (+ x 30) y 30 60))
+    :right (do (arc x y 60 60 (/ (* PI 3) 2) (/ (* PI 5) 2))
+               (rect x y 30 60))))
 
 (defn anchor
   [anchor-type title]
   (case anchor-type
     :header (let []              
-              (cap 0 0 :left)              
+              (cap 10 10 :left)
+              (rect 80 10 (- (width) 170 (text-width title)) 60)
               (colors/fill :primary :secondary)
               (text-size 60)
               (text-align :right)
               (text title (- (width) 80) (+ (text-ascent) 5))
-              (cap (- (width) 80) 0 :right))
+              (cap (- (width) 70) 10 :right))
     :footer (let []
-              (cap 0 (- (height) 80) :left)
-              (colors/fill :primary :secondary)
+              (cap 10 (- (height) 70) :left)
               (text-size 60)
+              (rect (+ (text-width title) 90)
+                    (- (height) 70)
+                    (- (width) 170 (text-width title))
+                    60)
+              (colors/fill :primary :secondary)
               (text-align :left)
               (text title 80 (- (height) 20))
-              (cap (- (width) 80) (- (height) 80) :right))))
+              (cap (- (width) 70) (- (height) 70) :right))))
 
 (defn center-shape
   [sh]
