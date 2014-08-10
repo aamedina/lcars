@@ -25,22 +25,32 @@
 (defn standard-button
   [button-text]
   (apply fill (:primary-blue color-scheme))
-  (arc 150 60 150 60 PI (* 2 PI) :chord)
+  (arc 50 40 75 60 (/ PI 2) (/ (* PI 3) 2))
   (fill 0)
   (text-size 25)
   (text-align :right)
   (text button-text 140 50))
 
+(defn cap
+  [x y orientation]
+  (apply fill (:primary-blue color-scheme))
+  (case orientation
+    :left (do (arc (+ x 10) (+ y 10) 75 60 (/ PI 2) (/ (* PI 3) 2))
+              (rect (+ x 47) (+ y 10) 15 60 1 0 0 1))
+    :right (do (arc (+ x 10) (+ y 10) 75 60 (/ (* PI 3) 2) (/ (* PI 5) 2))
+               (rect (+ x 33) (+ y 10) 15 60 0 1 1 0))))
+
 (defn anchor
   [anchor-type title]
   (case anchor-type
     :header (let []
-              (standard-button "")
+              (cap 0 0 :left)
               (apply fill (:light-blue color-scheme))
               (text-size 40)
               (text-align :right)
               (text title (- (width) 10) (text-ascent)))
     :footer (let []
+              (cap 120 0 :right)
               (apply fill (:light-blue color-scheme))
               (text-size 40)
               (text-align :left)
@@ -84,6 +94,8 @@
   (background 0)
   (text-font (:font state))
   (apply fill (:light-blue color-scheme))
+  (no-stroke)
+  (ellipse-mode :corner)
   (start-up-sequence state))
 
 (defsketch LCARS
