@@ -111,7 +111,23 @@
                           [] (take n (iterate #(* 2 %) h)))]
       (rect x y w h))))
 
-(defn elbow
+(defn top-elbow
+  [x y]
+  (let [[w h bar-height] [(responsive-width 150)
+                          (responsive-height 92.5)
+                          (responsive-height 30)]]
+    (colors/fill :primary)
+    (arc x (- y (/ w 2)) w w 0 PI)
+    (rect (+ x (/ w 2)) y (/ w 2) (/ w 2))
+    (rect (+ x (dec w)) (- (+ y (/ w 2)) bar-height) w bar-height)
+    (ellipse-mode :center)
+    (ellipse (+ x w) (+ y (- (/ w 2) bar-height)) (* bar-height 2)
+             (* 2 bar-height))
+    (fill 0)
+    (ellipse-mode :corner)
+    (ellipse (+ x w) y (- (/ w 2) bar-height) (- (/ w 2) bar-height))))
+
+(defn bottom-elbow
   [x y]
   (let [[w h bar-height] [(responsive-width 150)
                           (responsive-height 92.5)
@@ -165,7 +181,8 @@
   (background 0)
   #_(logo state 10 60)
   #_(button-group 10 200 3)
-  (elbow 10 10))
+  (top-elbow 10 10)
+  (bottom-elbow 10 (+ 85)))
 
 (defn focus-gained
   [state]
