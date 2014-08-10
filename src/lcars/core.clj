@@ -3,8 +3,7 @@
   (:require [quil.core :as q :refer :all]
             [quil.middleware :as m]
             [lcars.colors :as colors]
-            [lcars.ui :as ui]
-            [clojure.tools.logging :as log]))
+            [lcars.ui :as ui]))
 
 (defn rectangular-button
   [button-text]
@@ -94,7 +93,6 @@
 
 (defn setup
   []
-  (log/debug "SETUP")
   (ellipse-mode :corner)
   (no-stroke)
   (text-font (create-font "Helvetica LT UltraCompressed" 80 true))
@@ -191,7 +189,7 @@
 
 (defn on-close
   [state]
-  (log/debug "ON CLOSE"))
+  (println "on-close"))
 
 (defsketch LCARS
   :title "Library Computer Access/Retrieval System"
