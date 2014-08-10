@@ -91,6 +91,57 @@
           (/ (width) 2)
           (+ (/ (+ (height) (.-height emblem)) 2) 50))))
 
+(defn responsive-width
+  [w]
+  (let [proportion (/ (width) (screen-width))]
+    (* proportion w)))
+
+(defn responsive-height
+  [h]
+  (let [proportion (/ (height) (screen-height))]
+    (* proportion h)))
+
+(defn button-group
+  [x y n]
+  (let [[w h] [(responsive-width 150) (responsive-height 60)]]
+    (doseq [[h y] (reduce (fn [xs h]
+                            (conj xs [h (if-let [[p-h p-y] (peek xs)]
+                                          (+ p-y p-h 5)
+                                          y)]))
+                          [] (take n (iterate #(* 2 %) h)))]
+      (rect x y w h))))
+
+(defn elbow
+  [x y]
+  (let [[w h bar-height] [(responsive-width 150)
+                          (responsive-height 92.5)
+                          (responsive-height 30)]]
+    (colors/fill :primary)
+    (arc x y w w PI (* 2 PI))
+    (rect (+ x (/ w 2)) y (/ w 2) (/ w 2))
+    (rect (+ x (dec w)) y w bar-height)
+    (ellipse-mode :center)
+    (ellipse (+ x w) (+ y bar-height) (* bar-height 2) (* 2 bar-height))
+    (fill 0)
+    (ellipse-mode :corner)
+    (ellipse (+ x w) (+ y bar-height) (- (/ w 2) bar-height)
+             (- (/ w 2) bar-height))))
+
+(defmacro with-elbow
+  [title & content]
+  `(binding [ui/*system* :primary]
+     ))
+
+(defn logo
+  ([state x y] (logo state x y 80))
+  ([state x y font-size]
+     (text-font (get-in state [:fonts :title]))
+     (text-size font-size)
+     (text "STAR" x y)
+     (text "TREK" (- (+ x (text-width "STAR")) 12.5) (+ y 38))
+     (text-size 38)
+     (text "The Final Frontier" x (+ y 70))))
+
 (defn setup
   []
   (ellipse-mode :corner)
@@ -98,6 +149,11 @@
   (text-font (create-font "Helvetica LT UltraCompressed" 80 true))
   (colors/fill :primary)
   {:emblem (load-shape "img/UFP_Emblem.svg")
+   :fonts {:lcars (create-font "Helvetica LT UltraCompressed" 60 true)
+           :title (create-font "Federation" 60 true)
+           :logo (create-font "Krupper" 60 true)
+           :body (create-font "Nova Light Ultra SSi" 60 true)}
+   
    :x 0 :y 0})
 
 (defn update
@@ -107,7 +163,9 @@
 (defn draw
   [state]
   (background 0)
-  (start-up-sequence state))
+  #_(logo state 10 60)
+  #_(button-group 10 200 3)
+  (elbow 10 10))
 
 (defn focus-gained
   [state]
@@ -193,7 +251,7 @@
 
 (defsketch LCARS
   :title "Library Computer Access/Retrieval System"
-  :size [1440 800]
+  :size [1280 800]
   :setup setup
   :update update
   :draw draw
@@ -211,7 +269,8 @@
   :key-released key-released
   :key-typed key-typed
   :on-close on-close
-  :middleware [m/fun-mode])
+  :middleware [m/fun-mode]
+  :features [:resizable])
 
 (defn -main
   [& args])
