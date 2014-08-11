@@ -103,20 +103,29 @@
 
 (defn button-group
   [x y n]
+  (text-font (create-font "Helvetica LT UltraCompressed" 80 true))
+  (text-align :right)
   (let [[w h] [(responsive-width 150) (responsive-height 60)]]
     (doseq [[h y] (reduce (fn [xs h]
                             (conj xs [h (if-let [[p-h p-y] (peek xs)]
                                           (+ p-y p-h 5)
                                           y)]))
                           [] (take n (iterate #(* 2 %) h)))]
-      (rect x y w h))))
+      (colors/fill :primary)
+      (rect x y w h)
+      (fill 0)
+      (text-size 25)
+      (text "LCARS 49-2931" (+ x 135) (- (+ h y) 5)))
+    (colors/fill :primary)))
 
 (defn top-elbow
   [x y]
+  (colors/fill :primary)
+  (button-group x y 2)
   (let [[w h bar-height] [(responsive-width 150)
                           (responsive-height 92.5)
-                          (responsive-height 30)]]
-    (colors/fill :primary)
+                          (responsive-height 30)]
+        y (+ y (floor (* (responsive-width 60) 3)))]
     (arc x (- y (/ w 2)) w w 0 PI)
     (rect (+ x (/ w 2)) y (/ w 2) (/ w 2))
     (rect (+ x w) (- (+ y (/ w 2)) bar-height) w bar-height)
@@ -138,16 +147,37 @@
                           (responsive-height 30)]]
     (colors/fill :primary)
     (arc x y w w PI (* 2 PI))
+    (rect x (floor (+ y (/ w 2))) w w)
     (rect (+ x (/ w 2)) y (/ w 2) (/ w 2))
     (rect (+ x w) y w bar-height)
-    (rect (+ x (* w 2) 10 (- (width) (+ 35 (* w 2)) 30)) y (/ w 4) bar-height)
-    (rect (+ x (* w 2) 5) y (- (width) (+ 35 (* w 2)) 30) bar-height)
+    (let [w (floor w)
+          x (+ x (* w 3) 5)]
+      (rect (- x w) y (* w 2) bar-height)
+      (rect (+ x w) y (/ w 2) (/ w 2))      
+      (rect (+ x w) (floor (+ y (/ w 2))) w w)
+      (arc (+ x w) y w w PI (* 2 PI))
+      (ellipse-mode :center)
+      (ellipse (+ x w) (+ y bar-height) (* bar-height 2) (* 2 bar-height))
+      (fill 0)
+      (ellipse-mode :corner)
+      (ellipse (- (+ x w) (- (/ w 2) bar-height))
+               (+ y bar-height) (- (/ w 2) bar-height)
+               (- (/ w 2) bar-height))
+      (colors/fill :primary)
+      (button-group (+ x w) (+ y 5 (floor (* 1.5 w))) 3)
+      (fill 0)
+      (rect (+ x w) (- (height) 10) w 10))
+    (colors/fill :primary)
     (ellipse-mode :center)
     (ellipse (+ x w) (+ y bar-height) (* bar-height 2) (* 2 bar-height))
     (fill 0)
     (ellipse-mode :corner)
     (ellipse (+ x w) (+ y bar-height) (- (/ w 2) bar-height)
-             (- (/ w 2) bar-height))))
+             (- (/ w 2) bar-height))
+    (colors/fill :primary)
+    (button-group x (+ y 5 (floor (* 1.5 w))) 3)
+    (fill 0)
+    (rect x (- (height) 10) w 10)))
 
 (defmacro with-elbow
   [title & content]
@@ -155,14 +185,26 @@
      ))
 
 (defn logo
-  ([state x y] (logo state x y 80))
+  ([state x y] (logo state x y 120))
   ([state x y font-size]
+     (colors/fill :primary)
+     (text-align :right)
      (text-font (get-in state [:fonts :title]))
      (text-size font-size)
-     (text "STAR" x y)
-     (text "TREK" (- (+ x (text-width "STAR")) 12.5) (+ y 38))
-     (text-size 38)
-     (text "The Final Frontier" x (+ y 70))))
+     (text "STAR" (- x (text-width "TREK")) y)
+     (text "TREK" (- x 12.5) (+ y 38))
+     (text-size 58)
+     (text "The Final Frontier" (- x 15) (+ y 80))))
+
+(defn menu-buttons
+  [state x y]
+  (let [[w h] [(responsive-width 150) (responsive-width 60)]
+        [x y] [(+ x w) (+ y h)]
+        button-texts ["New Game" "Load Game" "Options" "Exit"]]
+    (text-align :center)
+    (doseq [[button-text n] (partition 2 (interleave button-texts (range)))]
+      (colors/fill :primary)
+      (text button-text (+ x (* 1.5 w)) (+ y (* 60 n) (* n h) 60)))))
 
 (defn setup
   []
@@ -183,12 +225,22 @@
   state)
 
 (defn draw
-  [state]
-  (background 0)
-  #_(logo state 10 60)
-  #_(button-group 10 200 3)
-  (top-elbow 10 10)
-  (bottom-elbow 10 (+ 85)))
+  [{:keys [emblem x y] :as state}]
+  (let [[top-x top-y] [10 10]
+        [bottom-x bottom-y] [top-x (+ top-y
+                                      (floor (* (responsive-width 60) 3))
+                                      (floor (responsive-width 75))
+                                      5)]]
+    (background 0)
+    (logo state (- (width) 40) 100)
+    (top-elbow top-x top-y)
+    (bottom-elbow bottom-x bottom-y)
+    (text-font (get-in state [:fonts :lcars]))
+    (colors/fill :primary)
+    (menu-buttons state bottom-x bottom-y)
+    (shape emblem
+           (- (width) (.-width emblem) 40)
+           (- (height) (.-height emblem) 40))))
 
 (defn focus-gained
   [state]
