@@ -10,7 +10,7 @@
   ui/Displayable
   (display [this]
     (if hovered?
-      (fill colors/off-white)
+      (apply fill colors/off-white)
       (colors/fill color))    
     (rect x y width height))
 
@@ -217,19 +217,35 @@
     :x x
     :y y))
 
+(defn hovered?
+  [x1 y1 {:keys [width height] :as component}]
+  (let [[x2 y2] [(:x component) (:y component)]]
+    (and (>= x1 x2) (<= x1 (+ x2 width))
+         (>= y1 y2) (<= y1 (+ y2 height)))))
+
 (defn mouse-clicked
   [state {:keys [x y]}]
+  (doseq [component (filter #(hovered? x y %) (:components state))]
+    (ui/click component))
   (-> state
       (assoc :x x :y y)
       (update-in [:components] conj (button x y 150 60))))
 
 (defn mouse-moved
   [state {:keys [x y p-x p-y]}]
-  (assoc state
-    :x x
-    :y y
-    :p-x p-x
-    :p-y p-y))
+  (let [components (reduce (fn [components component]
+                             (cond
+                               (and (hovered? x y component)
+                                    (not (hovered? p-x p-y component)))
+                               (conj components (assoc component
+                                                  :hovered? true))
+                               (and (not (hovered? x y component))
+                                    (hovered? p-x p-y component))
+                               (conj components (assoc component
+                                                  :hovered? false))
+                               :else (conj components component)))
+                           #{} (:components state))]
+    (assoc state :x x :y y :p-x p-x :p-y p-y :components components)))
 
 (defn mouse-dragged
   [state {:keys [x y p-x p-y button]}]
