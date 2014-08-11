@@ -3,7 +3,29 @@
   (:require [quil.core :as q :refer :all]
             [quil.middleware :as m]
             [lcars.colors :as colors]
-            [lcars.ui :as ui]))
+            [lcars.ui :as ui]
+            [clojure.set :as set]))
+
+(defrecord Button [x y width height color hovered?]
+  ui/Displayable
+  (display [this]
+    (if hovered?
+      (fill colors/off-white)
+      (colors/fill color))    
+    (rect x y width height))
+
+  ui/Clickable
+  (click [this]
+    (println "I'm clicked!"))
+
+  ui/Hoverable
+  (hover [this]
+    (assoc this
+      :hovered? (not hovered?))))
+
+(defn button
+  [x y width height]
+  (Button. x y 150 60 :primary false))
 
 (defn responsive-width
   [w]
@@ -31,7 +53,7 @@
       (colors/fill color)
       (rect x y w h)
       (fill 0)
-      (text-size 25)
+      (text-size (responsive-width (ceil 25)))
       (text "LCARS 49-2931" (+ x w) (- (+ y h) 5)))))
 
 (defn top-elbow
@@ -101,7 +123,7 @@
      ))
 
 (defn logo
-  ([state x y] (logo state x y 120))
+  ([state x y] (logo state x y (responsive-width (ceil 120))))
   ([state x y font-size]
      (colors/fill :primary)
      (text-align :right)
@@ -109,16 +131,17 @@
      (text-size font-size)
      (text "STAR" (- x (text-width "TREK")) y)
      (text "TREK" (- x 12.5) (+ y 38))
-     (text-size 58)
+     (text-size (responsive-width (ceil 58)))
      (text "The Final Frontier" (- x 15) (+ y 90))))
 
 (defn menu-buttons
   [state x y]
   (let [[w h] [(responsive-width 150) (responsive-width 60)]
-        [x y] [(+ x w) (+ y h)]
+        [x y] [(+ x w) (+ y h 20)]
         button-texts ["New Game" "Load Game" "Options" "Exit"]]
     (text-align :center)
     (colors/fill :primary)
+    (text-size (responsive-width (ceil 60)))
     (doseq [[button-text n] (partition 2 (interleave button-texts (range)))]
       (text button-text (+ x (* 1.5 w)) (+ y (* 60 n) (* n h) 60)))))
 
@@ -133,18 +156,20 @@
            :title (create-font "Federation" 60 true)
            :logo (create-font "Krupper" 60 true)
            :body (create-font "Nova Light Ultra SSi" 60 true)}
-   
-   :x 0 :y 0})
+   :x 0 :y 0
+   :components #{}})
 
 (defn update
   [state]
   state)
 
 (defn draw
-  [{:keys [emblem x y] :as state}]
+  [{:keys [emblem x y components] :as state}]
   (let [[top-x top-y] [5 5]
         [bottom-x bottom-y] [top-x (+ top-y (responsive-width 270))]]
     (background 0)
+    (doseq [component components]
+      (ui/display component))
     (logo state (- (width) 40) 100)
     (top-elbow top-x top-y)
     (bottom-elbow bottom-x bottom-y)
@@ -193,10 +218,10 @@
     :y y))
 
 (defn mouse-clicked
-  [state {:keys [x y button]}]
-  (assoc state
-    :x x
-    :y y))
+  [state {:keys [x y]}]
+  (-> state
+      (assoc :x x :y y)
+      (update-in [:components] conj (button x y 150 60))))
 
 (defn mouse-moved
   [state {:keys [x y p-x p-y]}]
@@ -230,7 +255,13 @@
   [state]
   state)
 
-(defn key-typed
+(defmulti key-typed (fn [state {:keys [key key-code raw-key]}] raw-key))
+
+(defmethod key-typed \`
+  [state {:keys [key key-code raw-key]}]
+  state)
+
+(defmethod key-typed :default
   [state {:keys [key key-code raw-key]}]
   (assoc state
     :key key
@@ -262,7 +293,7 @@
   :key-typed key-typed
   :on-close on-close
   :middleware [m/fun-mode]
-  :renderer "processing.core.PGraphicsRetina2D"
+  ;; :renderer "processing.core.PGraphicsRetina2D"
   :features [:resizable])
 
 (defn -main

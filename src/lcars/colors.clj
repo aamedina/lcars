@@ -43,13 +43,17 @@
    :tertiary orange-yellow
    :elbows red})
 
+(defn system-color
+  [color]
+  (case ui/*system*
+    :primary (primary-systems color)
+    :secondary (secondary-systems color)
+    :ancillary (ancillary-systems color)
+    :database (database-systems color)))
+
 (defn fill
   [color]
-  (let [[r g b] (case ui/*system*
-                  :primary (primary-systems color)
-                  :secondary (secondary-systems color)
-                  :ancillary (ancillary-systems color)
-                  :database (database-systems color))]
+  (let [[r g b] (system-color color)]
     (q/fill r g b)))
 
 (defn color-stream
