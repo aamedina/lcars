@@ -5,92 +5,6 @@
             [lcars.colors :as colors]
             [lcars.ui :as ui]))
 
-(defn rectangular-button
-  [button-text]
-  (colors/fill :primary)
-  (rect 0 0 150 60)
-  (fill 0)
-  (text-size 25)
-  (text-align :right)
-  (text button-text 140 50))
-
-(defn standard-button
-  [button-text]
-  (colors/fill :primary)
-  (arc 50 40 75 60 (/ PI 2) (/ (* PI 3) 2))
-  (fill 0)
-  (text-size 25)
-  (text-align :right)
-  (text button-text 140 50))
-
-(defn cap
-  [x y orientation]
-  (colors/fill :secondary)
-  (case orientation
-    :left (do (arc x y 60 60 (/ PI 2) (/ (* PI 3) 2))
-              (rect (+ x 30) y 30 60))
-    :right (do (arc x y 60 60 (/ (* PI 3) 2) (/ (* PI 5) 2))
-               (rect x y 30 60))))
-
-(defn anchor
-  [anchor-type title]
-  (case anchor-type
-    :header (let []              
-              (cap 10 10 :left)
-              (colors/fill :primary)
-              (rect 80 10 (- (width) 170 (text-width title)) 60)
-              (colors/fill :tertiary)
-              (text-size 60)
-              (text-align :right)
-              (text title (- (width) 80) (+ (text-ascent) 5))
-              (cap (- (width) 70) 10 :right))
-    :footer (let []
-              (cap 10 (- (height) 70) :left)
-              (text-size 60)
-              (colors/fill :primary)
-              (rect (+ (text-width title) 90)
-                    (- (height) 70)
-                    (- (width) 170 (text-width title))
-                    60)
-              (colors/fill :tertiary)
-              (text-align :left)
-              (text title 80 (- (height) 20))
-              (cap (- (width) 70) (- (height) 70) :right))))
-
-(defn center-shape
-  [sh]
-  (shape sh
-         (/ (- (width) (.-width sh)) 2)
-         (/ (- (height) (.-height sh)) 2)))
-
-(defmacro with-frame
-  [title subtitle system & body]
-  `(binding [ui/*system* ~system]
-     (anchor :header ~title)
-     ~@body
-     (anchor :footer ~subtitle)))
-
-(defn start-up-sequence
-  [{:keys [emblem x y] :as state}]
-  (with-frame "LCARS CONSOLE" "LCARS CONSOLE" :primary
-    (text-align :center)
-    (colors/fill :primary)
-    (shape emblem
-           (/ (- (width) (.-width emblem)) 2)
-           (- (/ (- (height) (.-height emblem)) 2) 80))
-    (text-size 80)
-    (text "THE LCARS COMPUTER NETWORK"
-          (/ (width) 2)
-          (- (+ (/ (+ (height) (.-height emblem)) 2) (text-ascent)) 80))
-    (text-size 25)
-    (text "AUTHORIZED ACCESS ONLY \u2022 SYSTEM AVAILABLE"
-          (/ (width) 2)
-          (+ (/ (+ (height) (.-height emblem)) 2) 25))
-
-    (text (pr-str [x y])
-          (/ (width) 2)
-          (+ (/ (+ (height) (.-height emblem)) 2) 50))))
-
 (defn responsive-width
   [w]
   (let [proportion (/ (width) (screen-width))]
@@ -106,36 +20,39 @@
   (text-font (create-font "Helvetica LT UltraCompressed" 80 true))
   (text-align :right)
   (let [[w h] [(responsive-width 150) (responsive-height 60)]]
-    (doseq [[h y] (reduce (fn [xs h]
+    (doseq [[h y color] (reduce (fn [xs [h color]]
                             (conj xs [h (if-let [[p-h p-y] (peek xs)]
                                           (+ p-y p-h 5)
-                                          y)]))
-                          [] (take n (iterate #(* 2 %) h)))]
-      (colors/fill :primary)
+                                          y) color]))
+                                [] (->> (interleave (iterate #(* 2 %) h)
+                                                    (colors/color-stream))
+                                        (partition 2)
+                                        (take n)))]
+      (colors/fill color)
       (rect x y w h)
       (fill 0)
       (text-size 25)
-      (text "LCARS 49-2931" (+ x 135) (- (+ h y) 5)))
-    (colors/fill :primary)))
+      (text "LCARS 49-2931" (+ x w) (- (+ y h) 5)))))
 
 (defn top-elbow
   [x y]
-  (colors/fill :primary)
   (button-group x y 2)
+  (colors/fill :elbows)
   (let [[w h bar-height] [(responsive-width 150)
                           (responsive-height 92.5)
                           (responsive-height 30)]
-        y (+ y (floor (* (responsive-width 60) 3)))]
+        y (+ y (+ w bar-height) 10)]
     (arc x (- y (/ w 2)) w w 0 PI)
     (rect (+ x (/ w 2)) y (/ w 2) (/ w 2))
     (rect (+ x w) (- (+ y (/ w 2)) bar-height) w bar-height)
+    (colors/fill :tertiary)
     (rect (+ x (* w 2) 5) (- (+ y (/ w 2)) bar-height)
           (- (width) (+ 35 (* w 2)) 30) bar-height)
+    (colors/fill :elbows)
     (rect (+ x (* w 2) 10 (- (width) (+ 35 (* w 2)) 30))
           (- (+ y (/ w 2)) bar-height) (/ w 4) bar-height)
     (ellipse-mode :center)
-    (ellipse (+ x w) (+ y (- (/ w 2) bar-height)) (* bar-height 2)
-             (* 2 bar-height))
+    (ellipse (+ x w) (+ y (- (/ w 2) bar-height)) (/ w 4) (/ w 4))
     (fill 0)
     (ellipse-mode :corner)
     (ellipse (+ x w) y (- (/ w 2) bar-height) (- (/ w 2) bar-height))))
@@ -145,39 +62,38 @@
   (let [[w h bar-height] [(responsive-width 150)
                           (responsive-height 92.5)
                           (responsive-height 30)]]
-    (colors/fill :primary)
+    (colors/fill :tertiary)
     (arc x y w w PI (* 2 PI))
     (rect x (floor (+ y (/ w 2))) w w)
     (rect (+ x (/ w 2)) y (/ w 2) (/ w 2))
     (rect (+ x w) y w bar-height)
-    (let [w (floor w)
-          x (+ x (* w 3) 5)]
+    (let [x (+ x (* w 3) 5)]
+      (colors/fill :elbows)
       (rect (- x w) y (* w 2) bar-height)
       (rect (+ x w) y (/ w 2) (/ w 2))      
       (rect (+ x w) (floor (+ y (/ w 2))) w w)
       (arc (+ x w) y w w PI (* 2 PI))
       (ellipse-mode :center)
-      (ellipse (+ x w) (+ y bar-height) (* bar-height 2) (* 2 bar-height))
+      (ellipse (+ x w) (+ y bar-height) (/ w 4) (/ w 4))
       (fill 0)
       (ellipse-mode :corner)
       (ellipse (- (+ x w) (- (/ w 2) bar-height))
                (+ y bar-height) (- (/ w 2) bar-height)
                (- (/ w 2) bar-height))
-      (colors/fill :primary)
       (button-group (+ x w) (+ y 5 (floor (* 1.5 w))) 3)
       (fill 0)
-      (rect (+ x w) (- (height) 10) w 10))
-    (colors/fill :primary)
+      (rect (+ x w) (- (height) 5) w 5))
+    (colors/fill :tertiary)
     (ellipse-mode :center)
-    (ellipse (+ x w) (+ y bar-height) (* bar-height 2) (* 2 bar-height))
+    (ellipse (+ x w) (+ y bar-height) (/ w 4) (/ w 4))
     (fill 0)
     (ellipse-mode :corner)
     (ellipse (+ x w) (+ y bar-height) (- (/ w 2) bar-height)
              (- (/ w 2) bar-height))
-    (colors/fill :primary)
+    (colors/fill :secondary)
     (button-group x (+ y 5 (floor (* 1.5 w))) 3)
     (fill 0)
-    (rect x (- (height) 10) w 10)))
+    (rect x (- (height) 5) w 5)))
 
 (defmacro with-elbow
   [title & content]
@@ -194,7 +110,7 @@
      (text "STAR" (- x (text-width "TREK")) y)
      (text "TREK" (- x 12.5) (+ y 38))
      (text-size 58)
-     (text "The Final Frontier" (- x 15) (+ y 80))))
+     (text "The Final Frontier" (- x 15) (+ y 90))))
 
 (defn menu-buttons
   [state x y]
@@ -202,8 +118,8 @@
         [x y] [(+ x w) (+ y h)]
         button-texts ["New Game" "Load Game" "Options" "Exit"]]
     (text-align :center)
+    (colors/fill :primary)
     (doseq [[button-text n] (partition 2 (interleave button-texts (range)))]
-      (colors/fill :primary)
       (text button-text (+ x (* 1.5 w)) (+ y (* 60 n) (* n h) 60)))))
 
 (defn setup
@@ -226,21 +142,22 @@
 
 (defn draw
   [{:keys [emblem x y] :as state}]
-  (let [[top-x top-y] [10 10]
-        [bottom-x bottom-y] [top-x (+ top-y
-                                      (floor (* (responsive-width 60) 3))
-                                      (floor (responsive-width 75))
-                                      5)]]
+  (let [[top-x top-y] [5 5]
+        [bottom-x bottom-y] [top-x (+ top-y (responsive-width 270))]]
     (background 0)
     (logo state (- (width) 40) 100)
     (top-elbow top-x top-y)
     (bottom-elbow bottom-x bottom-y)
     (text-font (get-in state [:fonts :lcars]))
-    (colors/fill :primary)
     (menu-buttons state bottom-x bottom-y)
     (shape emblem
            (- (width) (.-width emblem) 40)
-           (- (height) (.-height emblem) 40))))
+           (- (height) (.-height emblem) 100))
+    (colors/fill :primary)
+    (text-align :left)
+    (text "UNITED FEDERATION OF PLANETS"
+          (- (width) (.-width emblem))
+          (- (height) 30))))
 
 (defn focus-gained
   [state]
@@ -345,6 +262,7 @@
   :key-typed key-typed
   :on-close on-close
   :middleware [m/fun-mode]
+  :renderer "processing.core.PGraphicsRetina2D"
   :features [:resizable])
 
 (defn -main

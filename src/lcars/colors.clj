@@ -17,12 +17,13 @@
 (def red [0xcc 0x66 0x66])
 (def offline-red [0xff 0x00 0x00])
 (def offline-black [0x33 0x00 0x00])
+(def light-brown [0xf1 0xdf 0x6f])
 
 (def primary-systems
   {:primary light-blue 
-   :secondary off-white
-   :tertiary yellow
-   :elbows orange-yellow})
+   :secondary yellow
+   :tertiary off-white
+   :elbows light-brown})
 
 (def secondary-systems
   {:primary light-purple
@@ -50,3 +51,7 @@
                   :ancillary (ancillary-systems color)
                   :database (database-systems color))]
     (q/fill r g b)))
+
+(defn color-stream
+  []
+  (interleave (repeat :primary) (repeat :secondary) (repeat :tertiary)))
